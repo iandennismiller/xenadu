@@ -1,0 +1,12 @@
+#!/opt/local/bin/python
+
+import sys
+sys.path.append("/Users/idm/Code/saperea/xenadu/lib")
+
+from Xenadu.Core import Core
+
+def main():
+	Core().start()
+
+if __name__ == "__main__":
+	sys.exit(main())
