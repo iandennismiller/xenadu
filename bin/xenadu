@@ -1,7 +1,7 @@
-#!/opt/local/bin/python
+#!/usr/bin/env python
 
 import sys
-sys.path.append("/Users/idm/Code/saperea/xenadu/lib")
+#sys.path.append("/Users/idm/Code/saperea/xenadu/lib")
 
 from Xenadu.Core import Core
 

@@ -30,7 +30,9 @@ class Context(object):
     def import_config(self):
         #config_file = "%s/.xenadu/global.py" % os.path.expanduser('~')
         #execfile(config_file, globals(), Context.globals)
-        Context.globals = []
-        Context.globals['cwd'] = os.getcwd()
-        Context.globals['tmp_path'] = tempfile.mkdtemp(suffix='xenadu')
+
+        Context.globals = {
+            'cwd': os.getcwd(),
+            'tmp_path': tempfile.mkdtemp(suffix='xenadu'),
+        }
         

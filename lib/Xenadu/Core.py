@@ -18,15 +18,15 @@ class Core(object):
             function(Core.context.command_chosen[option])
 
     def load_configs(self, options):
-        #try:
+        try:
             ### 
             config_file = getattr(options, "config")
             #host_file = "%s/%s/dom0/xenadu_host.py" % (Core.context.globals['host_path'], getattr(options, "host"))
             execfile(config_file, globals(), Core.context.config)
             Core.context.logger.info("config file: " + config_file)
             Core.context.config["filename"] = getattr(options, "config")
-        #except:
-        #    print "exception: no config file"
+        except:
+            print "exception: no config file"
 
         #Core.context.globals["guest"] = getattr(options, "guest")
         #guest_file = "%s/%s/%s/%s.py" % (Core.context.globals['host_path'], getattr(options, "host"), 
