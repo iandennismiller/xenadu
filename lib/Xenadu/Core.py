@@ -1,5 +1,7 @@
 import Task.__registry__
 
+import sys, traceback, os.path
+
 class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
@@ -19,14 +21,23 @@ class Core(object):
 
     def load_configs(self, options):
         try:
-            ### 
             config_file = getattr(options, "config")
+        except KeyError:
+            print "exception: no config file"
+            
+        # set this equal to the path where the config file is.
+        #Core.context.config['xenadu_path'] = os.path.dirname(os.path.abspath(config_file))
+
+        try:
             #host_file = "%s/%s/dom0/xenadu_host.py" % (Core.context.globals['host_path'], getattr(options, "host"))
             execfile(config_file, globals(), Core.context.config)
             Core.context.logger.info("config file: " + config_file)
             Core.context.config["filename"] = getattr(options, "config")
         except:
-            print "exception: no config file"
+            traceback.print_tb(sys.exc_info()[2])
+            print "Xenadu cannot load or execute config file '%s'; exiting." % config_file
+            sys.exit()            
+
 
         #Core.context.globals["guest"] = getattr(options, "guest")
         #guest_file = "%s/%s/%s/%s.py" % (Core.context.globals['host_path'], getattr(options, "host"), 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PROJECT="xenadu"
-VERSION="r2"
+VERSION="r4"
 
 function build {
     rm -rf tmp/build
