@@ -1,6 +1,10 @@
-import Task.__registry__
+#import Task.__registry__
 
 import sys, traceback, os.path
+import os
+import tempfile
+import logging
+from optparse import OptionParser
 
 class Usage(Exception):
     def __init__(self, msg):
@@ -8,67 +12,81 @@ class Usage(Exception):
 
 class Core(object):
     registry = None
-    context = None
+    logger = None
+    config = {}
+    env = {}
 
     def __init__(self):
-        pass
+        self.command_line = OptionParser()
+        self.command_chosen = {}
+        self.init_logger()
 
-    def call_chosen_function(self):
-        for option in Core.context.command_chosen.keys():
-            Core.context.logger.info("calling " + option)
-            function = Core.registry.task_registry[option]
-            function(Core.context.command_chosen[option])
+    def init_logger(self):
+        Core.logger = logging.getLogger("Xenadu")
+        Core.logger.setLevel(logging.DEBUG)
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        ch.setFormatter(formatter)
+        Core.logger.addHandler(ch)
 
-    def load_configs(self, options):
+    def process_cmdline(self):
+        self.command_line.add_option("--config", help="config file path")
+        (options, args) = self.command_line.parse_args()
+
+        for option in Core.registry.options.keys():
+            if getattr(options, option):
+                self.command_chosen[option] = getattr(options, option)
+
+        self.load_config(options)
+
+        for option in self.command_chosen.keys():
+            Core.logger.info("calling " + option)
+            function = Core.registry.tasks[option]
+            function(self.command_chosen[option])
+
+    def load_config(self, options):
         try:
             config_file = getattr(options, "config")
         except KeyError:
             print "exception: no config file"
-            
-        # set this equal to the path where the config file is.
-        #Core.context.config['xenadu_path'] = os.path.dirname(os.path.abspath(config_file))
+
+        Core.env = {
+            'cwd': os.getcwd(),
+            #'tmp_path': tempfile.mkdtemp(suffix='xenadu'),
+            'tmp_path': "/tmp/xenadu",
+            'guest_path': os.path.dirname(os.path.abspath(config_file))
+        }
 
         try:
-            #host_file = "%s/%s/dom0/xenadu_host.py" % (Core.context.globals['host_path'], getattr(options, "host"))
-            execfile(config_file, globals(), Core.context.config)
-            Core.context.logger.info("config file: " + config_file)
-            Core.context.config["filename"] = getattr(options, "config")
-        except:
+            execfile(config_file, globals(), Core.config)
+            Core.logger.info("config file: " + config_file)
+            Core.config["filename"] = getattr(options, "config")
+        except IOError:
             traceback.print_tb(sys.exc_info()[2])
-            print "Xenadu cannot load or execute config file '%s'; exiting." % config_file
-            sys.exit()            
-
-
-        #Core.context.globals["guest"] = getattr(options, "guest")
-        #guest_file = "%s/%s/%s/%s.py" % (Core.context.globals['host_path'], getattr(options, "host"), 
-        #    getattr(options, "guest"), getattr(options, "guest"))
-        #execfile(guest_file, globals(), Core.context.guest)
-        #Core.context.logger.info("guest file: " + guest_file)
+            Core.logger.error("Xenadu cannot load or execute config file '%s'; exiting." % config_file)
+            sys.exit()
         
-    def process_cmdline(self):
-        Task.__registry__.register_tasks()
+        try:
+            dom0_config_filename = Core.config["xen"]["dom0_config"]
+        except KeyError:
+            dom0_config_filename = 0
+            Core.logger.warn("There is no dom0 config file.  Is this a Xen root domain?")
 
-        Core.context.command_line.add_option("--config", help="config file path")
-        
-        #Core.context.command_line.add_option("--host", help="host path")
-        #Core.context.command_line.add_option("--guest", help="guest path")
-
-        (options, args) = Core.context.command_line.parse_args()
-
-        for option in Core.registry.options_registry.keys():
-            if getattr(options, option):
-                Core.context.command_chosen[option] = getattr(options, option)
-
-        self.load_configs(options)
-
-        self.call_chosen_function()
+        if dom0_config_filename:
+            try:
+                host_hash = {}
+                Core.logger.info("dom0 config file: " + dom0_config_filename)
+                execfile(Core.config["xen"]["dom0_config"], globals(), host_hash)
+                Core.config["dom0"] = host_hash
+            except IOError:
+                traceback.print_tb(sys.exc_info()[2])
+                Core.logger.warn("Xenadu cannot load or execute config file '%s'; exiting" % dom0_config_filename)
+                sys.exit()
 
     def start(self):
         from Xenadu.Registry import Registry
-        from Xenadu.Context import Context
+        Core.registry = Registry(self)
+        Core.registry.update()
 
-        Core.registry = Registry()
-        Core.context = Context()
-        Core.context.init_logger()
-        Core.context.import_config()
         self.process_cmdline()

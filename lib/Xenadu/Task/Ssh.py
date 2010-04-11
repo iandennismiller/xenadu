@@ -1,6 +1,6 @@
 from Xenadu.Core import Core
 import os, shutil, subprocess, string
-import Xenadu.Task.Sync
+#import Xenadu.Task.Sync
 from Xenadu.Language import Language, file, common
 
 def ssh_deploy_server_keys(dummy):
@@ -51,28 +51,28 @@ def ssh_import_server_keys(dummy):
     Xenadu.Task.Sync.slurp_from("/etc/ssh/ssh_host_rsa_key.pub", file_mapping = mapping)
 
 def ssh_dom0(command):
+    Core.logger.debug("ssh_dom0: " + command)
+    
     output = subprocess.Popen(["/usr/bin/ssh",
-        "root@%s" % Core.context.host["config"]["ssh_address"],
+        "%(user)s@%(address)s" % Core.config["dom0"]["ssh"],
         command],
         stdout=subprocess.PIPE).communicate()[0]
 
+    Core.logger.debug("ssh_dom0 returned:" + output)
     return output
 
-def xen_create_image(dummy):
+def ssh(command):
+    Core.logger.debug("ssh_guest: " + command)
 
-    xen_tools_cmd = "/usr/bin/xen-create-image --hostname=%(hostname)s --ip=%(ip)s --output=/etc/xen/domains --no-hosts " + \
-        "--swap=%(swap)sMb --memory=%(ram)sMb --size=%(disk)sMb --verbose --force --boot"
-    
-    xen_tools_cmd = xen_tools_cmd % Core.context.guest["config"]
+    output = subprocess.Popen(["/usr/bin/ssh",
+        "%(user)s@%(address)s" % Core.config["ssh"],
+        command],
+        stdout=subprocess.PIPE).communicate()[0]
 
-    Core.context.logger.info("xen guest create: " + xen_tools_cmd)
-    print ssh_dom0(xen_tools_cmd)
-    
-    set_auto_cmd = "ln -s /etc/xen/domains/%(hostname)s.cfg /etc/xen/auto" % Core.context.guest["config"]
-    print ssh_dom0(set_auto_cmd)
+    Core.logger.debug("ssh_guest returned:" + output)
+    return output
 
 def register():
-	Core().registry.register_task(name="ssh.bootstrap", args=0, help="copy ssh config for the first time", function=ssh_bootstrap)
-	Core().registry.register_task(name="ssh.keys.deploy", args=0, help="copy ssh keys over", function=ssh_deploy_server_keys)
-	Core().registry.register_task(name="ssh.keys.import", args=0, help="grab ssh keys from remote server", function=ssh_import_server_keys)
-	Core().registry.register_task(name="guest.create", args=0, help="create xen guest", function=xen_create_image)
+	Core.registry.register_task(name="ssh.bootstrap", args=0, help="copy ssh config for the first time", function=ssh_bootstrap)
+	Core.registry.register_task(name="ssh.keys.deploy", args=0, help="copy ssh keys over", function=ssh_deploy_server_keys)
+	Core.registry.register_task(name="ssh.keys.import", args=0, help="grab ssh keys from remote server", function=ssh_import_server_keys)

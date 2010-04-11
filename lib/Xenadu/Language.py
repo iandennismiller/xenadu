@@ -3,18 +3,19 @@ from string import Template
 import inspect, re, os
 
 def file(filename):
-    src_file = os.path.join(Core.context.config['xenadu_path'], 'files', filename)
+    src_file = os.path.join(Core.env['guest_path'], 'files', filename)
     #    src_file = "%(xenadu_path)s/files/" % Core.context.config  + filename
     try:
         file = open(src_file, 'r').read()
         return file
     except:
-        Core.context.logger.warn("problem opening file: %s" % src_file)
+        Core.logger.warn("problem opening file: %s" % src_file)
         return ""
 
 def common(filename):
     return "../../_common/%s" % filename
 
+"""
 def template(template_string):
     template_hash = {}
     
@@ -24,6 +25,7 @@ def template(template_string):
     template = Template(template_string)
 
     return template.safe_substitute(template_hash)
+"""
     
 def file_common(filename):
     return file(common(filename))
