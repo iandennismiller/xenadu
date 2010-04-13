@@ -38,13 +38,6 @@ def simulate(dummy):
         stdout=subprocess.PIPE).communicate()[0]
     print output
 
-def spinup(dummy):
-    output = subprocess.Popen(["/usr/bin/ssh",
-        "%(user)s@%(address)s" % Core.config["ssh"],
-        Core.config["spinup"]],
-        stdout=subprocess.PIPE).communicate()[0]
-    print output
-
 def deploy(dummy):
     build(0)
 
@@ -66,8 +59,6 @@ def deploy(dummy):
         "%(user)s@%(address)s" % Core.config["ssh"],
         chown_cmd])
     
-    #spinup(0)
-
 def register():
     Core.registry.register_task(name="clean", args=0, help="remove build path", function=clean)
     Core.registry.register_task(name="build", args=0, help="build files for host", function=build)
