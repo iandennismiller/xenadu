@@ -2,98 +2,58 @@ import sys, traceback, os.path, os, inspect, re, os, tempfile, logging
 from optparse import OptionParser
 from string import Template
 
+Env = {}
+
 class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
 
 class Core(object):
-    registry = None
-    logger = None
-    config = {}
-    env = {}
-
     def __init__(self):
+        self.init_logger()
         self.command_line = OptionParser()
         self.command_chosen = {}
-        self.init_logger()
+        Env['Core'] = self
+        self.config = {
+            'cwd': os.getcwd(),
+            'tmp_path': "/tmp/xenadu"
+        }
+        self.registry = Registry(self)
+        self.registry.update()
 
     def init_logger(self):
-        Core.logger = logging.getLogger("Xenadu")
-        Core.logger.setLevel(logging.DEBUG)
+        logger = logging.getLogger("Xenadu")
+        logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
         ch.setFormatter(formatter)
-        Core.logger.addHandler(ch)
+        logger.addHandler(ch)
 
-    def process_cmdline(self):
-        #self.command_line.add_option("--config", help="config file path")
+    def start(self):
+        # process command line
         (options, args) = self.command_line.parse_args()
-
-        for option in Core.registry.options.keys():
+        for option in self.registry.options.keys():
             if getattr(options, option):
                 self.command_chosen[option] = getattr(options, option)
 
-        #self.load_config(options)
-
         for option in self.command_chosen.keys():
-            Core.logger.info("calling " + option)
-            function = Core.registry.tasks[option]
+            logging.getLogger("Xenadu").info("calling " + option)
+            function = self.registry.tasks[option]
             function(self.command_chosen[option])
-
-    def load_config(self, options):
-        try:
-            config_file = getattr(options, "config")
-        except KeyError:
-            print "exception: no config file"
-
-
-        try:
-            execfile(config_file, globals(), Core.config)
-            Core.logger.info("config file: " + config_file)
-            Core.config["filename"] = getattr(options, "config")
-        except IOError:
-            traceback.print_tb(sys.exc_info()[2])
-            Core.logger.error("Xenadu cannot load or execute config file '%s'; exiting." % config_file)
-            sys.exit()
-        
-        try:
-            dom0_config_filename = Core.config["xen"]["dom0_config"]
-        except KeyError:
-            dom0_config_filename = 0
-            Core.logger.warn("There is no dom0 config file.  Is this a Xen root domain?")
-
-        if dom0_config_filename:
-            try:
-                host_hash = {}
-                Core.logger.info("dom0 config file: " + dom0_config_filename)
-                execfile(Core.config["xen"]["dom0_config"], globals(), host_hash)
-                Core.config["dom0"] = host_hash
-            except IOError:
-                traceback.print_tb(sys.exc_info()[2])
-                Core.logger.warn("Xenadu cannot load or execute config file '%s'; exiting" % dom0_config_filename)
-                sys.exit()
-
-    def start(self):
-        Core.env = {
-            'cwd': os.getcwd(),
-            #'tmp_path': tempfile.mkdtemp(suffix='xenadu'),
-            'tmp_path': "/tmp/xenadu",
-            'guest_path': os.path.dirname(os.path.abspath(config_file))
-        }
-
-        Core.registry = Registry(self)
-        Core.registry.update()
-        self.process_cmdline()
 
 class XenaduConfig(object):
     def __init__(self):
-        X = Language()
-        for i in file_list:
-            X.add(i[0], i[1], i[2])
+        pass
 
+    def start(self):
         c = Core()
+        c.config.update(self.env())
+        X = Language()
+        for i in self.file_list():
+            X.add(i[0], i[1], i[2])
         c.config['mapping'] = X.get_hash()
+        print c.config
         c.start()
 
 class Perm(object):
@@ -174,21 +134,21 @@ class Registry(object):
 
     def update(self):
         m = __import__("Xenadu.Task")
-        for task in dir(m.Task):            
+        for task in dir(m.Task):
             if not re.search(r'^__', task):
                 mod_name = "Xenadu.Task.%s" % task
                 mod = sys.modules[mod_name]
+                logging.getLogger("Xenadu").debug("loading: %s" % mod_name)
                 mod.register()
-                self.Core.logger.debug("loading: %s" % mod_name)
 
 def f(filename):
-    src_file = os.path.join(Core.env['guest_path'], 'files', filename)
+    src_file = os.path.join(Env["Core"].config['guest_path'], 'files', filename)
     #    src_file = "%(xenadu_path)s/files/" % Core.context.config  + filename
     try:
         file = open(src_file, 'r').read()
         return file
     except:
-        Core.logger.warn("problem opening file: %s" % src_file)
+        logging.getLogger("Xenadu").warn("problem opening file: %s" % src_file)
         return ""
 
 def common(filename):

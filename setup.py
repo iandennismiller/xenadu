@@ -22,7 +22,7 @@ for root, dirs, filenames in os.walk(includes_dir):
         includes.append((final, files))
 
 setup(name='xenadu',
-      version='r2',
+      version='0.1',
       description='Xenadu manages system configurations',
       author='Ian Dennis Miller',
       author_email='ian@saperea.com',
