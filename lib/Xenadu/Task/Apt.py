@@ -1,4 +1,4 @@
-from Xenadu.Core import Core
+from Xenadu import Core
 from Xenadu.Task.Ssh import ssh
 
 def aptitude(dummy):

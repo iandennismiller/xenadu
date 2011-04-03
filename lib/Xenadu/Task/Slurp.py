@@ -1,4 +1,4 @@
-from Xenadu.Core import Core
+from Xenadu import Core
 import os, shutil, subprocess, string, re, sys
 
 def lookup_file(filename, file_mapping=None):

@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
-#def setup():
-#    pass
-    
 import glob, os, re
 
 includes = []
