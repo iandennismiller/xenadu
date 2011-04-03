@@ -3,7 +3,7 @@ import os, shutil, subprocess, string, re, sys
 
 def lookup_file(filename, file_mapping=None):
     if file_mapping == None:
-        file_mapping = Xenadu.Env["Core"].config["mapping"]
+        file_mapping = Xenadu.Env["Config"]["mapping"]
     try:
         generator = file_mapping[filename]["generator"]
     except KeyError:
@@ -19,7 +19,7 @@ def slurp_remote(filename, file_mapping=None):
     dst_file = os.path.join(Xenadu.Env["Core"].env["guest_path"], "files", m.group(1))
     Xenadu.Env["Core"].logger.info("remote file: %s, local file: %s" % (filename, dst_file))
     subprocess.Popen(["/usr/bin/scp", 
-        "%s@%s:%s" % (Xenadu.Env["Core"].config["ssh"]["user"], Xenadu.Env["Core"].config["ssh"]["address"], filename), 
+        "%s@%s:%s" % (Xenadu.Env["Config"]["ssh"]["user"], Xenadu.Env["Config"]["ssh"]["address"], filename), 
         dst_file])
 
 def diff(filename, file_mapping=None):
@@ -31,11 +31,11 @@ def diff(filename, file_mapping=None):
     Xenadu.Env["Core"].logger.info("diff remote file: %s, local file: %s" % (filename, local_file))
 
     file = open(diff_file, "w")
-    file.write(Xenadu.Env["Core"].config["mapping"][filename]["content"])
+    file.write(Xenadu.Env["Config"]["mapping"][filename]["content"])
     file.close()
 
     output = subprocess.Popen(["/usr/bin/scp", 
-        "%s@%s:%s" % (Xenadu.Env["Core"].config["ssh"]["user"], Xenadu.Env["Core"].config["ssh"]["address"], filename), 
+        "%s@%s:%s" % (Xenadu.Env["Config"]["ssh"]["user"], Xenadu.Env["Config"]["ssh"]["address"], filename), 
         dst_file]).communicate()[0]
 
     output = subprocess.Popen(["/usr/bin/diff", dst_file, diff_file],
@@ -63,7 +63,7 @@ def slurp_all(dummy, file_mapping = None):
         slurp(filename)
 
 def register():
-	Xenadu.Env["Core"].registry.register_task(name="slurp.local", args=1, help="copy file from remote host based on local filename", function=slurp_local)
-	Xenadu.Env["Core"].registry.register_task(name="slurp.remote", args=1, help="copy file based on remote filename", function=slurp_remote)
-	Xenadu.Env["Core"].registry.register_task(name="slurp.all", args=0, help="copy all files from remote host", function=slurp_all)
-	Xenadu.Env["Core"].registry.register_task(name="diff.remote", args=1, help="diff remote file with local version", function=diff)
+	Xenadu.Env["Registry"].register_task(name="slurp.local", args=1, help="copy file from remote host based on local filename", function=slurp_local)
+	Xenadu.Env["Registry"].register_task(name="slurp.remote", args=1, help="copy file based on remote filename", function=slurp_remote)
+	Xenadu.Env["Registry"].register_task(name="slurp.all", args=0, help="copy all files from remote host", function=slurp_all)
+	Xenadu.Env["Registry"].register_task(name="diff.remote", args=1, help="diff remote file with local version", function=diff)

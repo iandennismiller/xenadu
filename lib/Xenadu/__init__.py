@@ -14,12 +14,12 @@ class Core(object):
         self.command_line = OptionParser()
         self.command_chosen = {}
         Env['Core'] = self
-        self.config = {
+        Env['Config'] = {
             'cwd': os.getcwd(),
             'tmp_path': "/tmp/xenadu"
         }
-        self.registry = Registry(self)
-        self.registry.update()
+        Env['Registry'] = Registry(self)
+        Env['Registry'].update()
 
     def init_logger(self):
         logger = logging.getLogger("Xenadu")
@@ -33,28 +33,25 @@ class Core(object):
     def start(self):
         # process command line
         (options, args) = self.command_line.parse_args()
-        for option in self.registry.options.keys():
+        for option in Env["Registry"].options.keys():
             if getattr(options, option):
                 self.command_chosen[option] = getattr(options, option)
 
         for option in self.command_chosen.keys():
             logging.getLogger("Xenadu").info("calling " + option)
-            function = self.registry.tasks[option]
+            function = Env['Registry'].tasks[option]
             function(self.command_chosen[option])
 
 class XenaduConfig(object):
-    def __init__(self):
-        pass
-
-    def start(self):
-        c = Core()
-        c.config.update(self.env())
+    def __init__(self, env):
+        self.c = Core()
+        Env['Config'].update(env)
         X = Language()
         for i in self.file_list():
             X.add(i[0], i[1], i[2])
-        c.config['mapping'] = X.get_hash()
-        print c.config
-        c.start()
+        Env['Config']['mapping'] = X.get_hash()
+        print Env['Config']
+        self.c.start()
 
 class Perm(object):
     root_644 = {
@@ -142,7 +139,7 @@ class Registry(object):
                 mod.register()
 
 def f(filename):
-    src_file = os.path.join(Env["Core"].config['guest_path'], 'files', filename)
+    src_file = os.path.join(Env["Config"]['guest_path'], 'files', filename)
     #    src_file = "%(xenadu_path)s/files/" % Core.context.config  + filename
     try:
         file = open(src_file, 'r').read()
