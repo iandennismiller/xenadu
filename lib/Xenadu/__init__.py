@@ -1,3 +1,4 @@
+from __future__ import with_statement
 import sys, traceback, os.path, os, inspect, re, os, tempfile, logging
 from optparse import OptionParser
 from string import Template
@@ -23,22 +24,16 @@ class Core(object):
 
     def init_logger(self):
         logger = logging.getLogger("Xenadu")
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.INFO)
         formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
+        ch.setLevel(logging.INFO)
         ch.setFormatter(formatter)
         logger.addHandler(ch)
 
     def start(self):
-        # process command line
-        (options, args) = self.command_line.parse_args()
-        for option in Env["Registry"].options.keys():
-            if getattr(options, option):
-                self.command_chosen[option] = getattr(options, option)
-
         for option in self.command_chosen.keys():
-            logging.getLogger("Xenadu").info("calling " + option)
+            logging.getLogger("Xenadu").debug("calling " + option)
             function = Env['Registry'].tasks[option]
             function(self.command_chosen[option])
 
@@ -46,11 +41,26 @@ class XenaduConfig(object):
     def __init__(self, env):
         self.c = Core()
         Env['Config'].update(env)
+
+        # process command line
+        Env['Core'].command_line.add_option("-p", help="profile to use")
+        (options, args) = Env['Core'].command_line.parse_args()
+        for option in Env["Registry"].options.keys():
+            if getattr(options, option):
+                Env['Core'].command_chosen[option] = getattr(options, option)
+        
+        profile = getattr(options, "p")
+        if profile:
+            Env['Profile'] = profile
+            logging.getLogger("Xenadu").info("profile is: %s " % Env['Profile'])
+        else:
+            Env['Profile'] = None
+
         X = Language()
         for i in self.file_list():
             X.add(i[0], i[1], i[2])
         Env['Config']['mapping'] = X.get_hash()
-        print Env['Config']
+        #print Env['Config']
         self.c.start()
 
 class Perm(object):
@@ -82,25 +92,19 @@ class Language(object):
     def __init__(self):
         self.mapping = {}
 
-    def add(self, dest, content, perm_hash=Perm.root_644):
-        caller = inspect.stack()[1][4][0]
-        match = re.match(r'.+\.add\(\".*?\", (.*)\)', caller)
-        if match:
-            generator = match.group(1)
-        else:
-            generator = ""
-        
-        owner = perm_hash['owner']
-        group = perm_hash['group']
-        perm = perm_hash['perm']
+    def add(self, dest, src, perm_hash=Perm.root_644):        
+        #try:
+        #with open(src) as f:
+        #    content = f.read()
 
         self.mapping[dest] = {
-            "content": content,
-            "owner": owner,
-            "group": group,
-            "perm": perm,
-            "generator": generator,
+            #"content": content,
+            "local_file": src,
+            "remote_file": dest,
+            #"generator": generator,
         }
+
+        self.mapping[dest].update(perm_hash)
 
     def get_hash(self):
         return self.mapping

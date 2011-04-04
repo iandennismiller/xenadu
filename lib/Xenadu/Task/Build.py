@@ -1,5 +1,5 @@
 import Xenadu
-import os, shutil, subprocess, string, re
+import os, shutil, subprocess, string, re, logging
 
 def clean(dummy):
     errors = []
@@ -10,6 +10,12 @@ def clean(dummy):
 
 def do_build(file_mapping):
     for dest_filename in file_mapping:
+        try:
+            entry = Xenadu.Env["Config"]["mapping"][dest_filename]
+        except:
+            logging.getLogger("Xenadu").error("can't find: %s" % dest_filename)
+            return
+
         dst_file = "%s/build/.%s" % (Xenadu.Env["Config"]["tmp_path"], dest_filename)
         
         try:
@@ -17,10 +23,9 @@ def do_build(file_mapping):
         except:
             pass
         
-        out_filehandle = open(dst_file, "w")
-        out_filehandle.write(file_mapping[dest_filename]["content"])
-        out_filehandle.close()
-        
+        local_file = os.path.join(Xenadu.Env["Config"]["guest_path"], "files", entry['local_file'])
+        shutil.copyfile(local_file, dst_file)
+
         os.chmod(dst_file, string.atoi(file_mapping[dest_filename]["perm"], 8))
 
 def build(dummy):
@@ -50,13 +55,17 @@ def deploy(dummy):
     chown_cmd = ""
         
     for dst_file in Xenadu.Env["Config"]["mapping"]:
+        # this won't work for files with ' or escape chars
         chown_cmd = chown_cmd + "chown %s:%s %s;" % (
             Xenadu.Env["Config"]["mapping"][dst_file]["owner"], 
             Xenadu.Env["Config"]["mapping"][dst_file]["group"], dst_file)
 
-    subprocess.Popen(["/usr/bin/ssh",
-        "%(user)s@%(address)s" % Xenadu.Env["Config"]["ssh"],
-        chown_cmd])
+    cmd = "/usr/bin/ssh %(user)s@%(address)s " % Xenadu.Env["Config"]["ssh"] + " '%s'" % chown_cmd
+    os.system(cmd)
+    
+    #subprocess.Popen(["/usr/bin/ssh",
+    #    "%(user)s@%(address)s" % Xenadu.Env["Config"]["ssh"],
+    #    chown_cmd])
     
 def register():
     Xenadu.Env["Registry"].register_task(name="clean", args=0, help="remove build path", function=clean)
