@@ -1,23 +1,13 @@
 from fabric.api import env, run, local, hosts, put, settings
 import os, sys, glob
 
-def xenadu(action='simulate'):
-    """
-    call xenadu with an action (simulate, deploy, apt, guest.create...)
-    """
-    cmd = "xenadu --config %s --%s" % (env.cfg, action)
-    local(cmd, capture=False)
-
-def prime_ssh(lvm_path=''):
+def prime_ssh(lvm_path='', ssh_path, root_authorized_keys2):
     """
     Prime a freshly created (unbooted) guest with existing ssh server keys and a root auth
     """
     if not lvm_path:
         return
     
-    ssh_path = '/Users/idm/Code/saperea/domination/xenadu/svn/files/_ssh'
-    root_authorized_keys2 = '/Users/idm/Code/saperea/domination/xenadu/_common/_ssh/authorized_keys2-root'
-
     run("umount /mnt/xenadu; mount %s /mnt/xenadu" % lvm_path)
     put(os.path.join(ssh_path, "ssh_host_dsa_key"), "/mnt/xenadu/etc/ssh/ssh_host_dsa_key", mode=0600)
     put(os.path.join(ssh_path, "ssh_host_dsa_key.pub"), "/mnt/xenadu/etc/ssh/ssh_host_dsa_key.pub", mode=0644)
@@ -77,12 +67,11 @@ def run_in_volume(lvm_path='', cmd=''):
     run(cmd)
     run("umount /mnt/xenadu")
 
-def setup_backuppc():
+def setup_backuppc(auth_file):
     """
     set up backuppc login
     """
 
-    auth_file = "/Users/idm/Code/saperea/domination/xenadu/_common/authorized_keys2-backuppc"
     cmd = """
     groupadd backuppc;
     useradd -c "BackupPC User" -d /home/backuppc -m -g backuppc -s /bin/rbash backuppc;
@@ -92,18 +81,17 @@ def setup_backuppc():
     put(auth_file, "/home/backuppc/.ssh/authorized_keys2")
     run("chown -R backuppc:backuppc /home/backuppc")
 
-def setup_idm():
+def setup_user(username, auth_file):
     """
-    setup idm login
+    setup user login(username, ssh_auth_file)
     """
-    auth_file = "/Users/idm/Code/saperea/domination/xenadu/_common/authorized_keys2-idm"
     cmd = """
-    useradd -c "idm" -d /home/idm -m -s /bin/bash idm;
-    mkdir -p /home/idm/.ssh;
-    """
+    useradd -c "%(u)s" -d /home/%(u)s -m -s /bin/bash %(u)s;
+    mkdir -p /home/%(u)s/.ssh;
+    """ % {'u': username}
     run(cmd)
-    put(auth_file, "/home/idm/.ssh/authorized_keys2")
-    run("chown -R idm:idm /home/idm")
+    put(auth_file, "/home/%(u)s/.ssh/authorized_keys2" % {'u': username})
+    run("chown -R %(u)s:%(u)s /home/%(u)s" % {'u': username})
 
 def image_receive(device=''):
     """
@@ -170,18 +158,6 @@ def migrate_image(from_dom0, from_lvm, to_ip, new_size='5G'):
     """ % c
     print cmd
 
-def install_finish():
-    """
-    finish xenadu guest installation
-    """
-    #ssh root@%(hostname)s ln -s /mnt/maildir /var/Maildir
-
-    xenadu('apt')
-    xenadu('deploy')
-    
-    with settings(host_string=env.lvm_base):
-        setup_idm()
-
 def install_start():
     """
     begin installing xenadu guest
@@ -194,6 +170,18 @@ def install_start():
         run_in_volume("%(pv_dev)s/%(lvm_base)s-disk" % env, 'mkdir /mnt/xenadu/mnt/data')
         send_fstab("%(pv_dev)s/%(lvm_base)s-disk" % env)
 
+def install_finish():
+    """
+    finish xenadu guest installation
+    """
+    #ssh root@%(hostname)s ln -s /mnt/maildir /var/Maildir
+
+    xenadu('apt')
+    xenadu('deploy')
+    
+    with settings(host_string=env.lvm_base):
+        setup_idm()
+
 def migration():
     """
     migrate a machine from one host to another
@@ -204,24 +192,6 @@ def migration():
     a = raw_input('has migration completed?')
     os.system('rsync dom0/xen.cfg root@augusta:/etc/xen/domains/highriseweb.saperea.com.cfg')
     install_finish()
-
-def setup_user(username=''):
-    """
-    setup user
-    """
-    if not username:
-        return
-
-    auth_file = "/Users/idm/Code/saperea/domination/xenadu/_common/authorized_keys2-idm"
-
-    cmd = """
-    useradd -c "%(username)s" -d /home/%(username)s -m -s /bin/bash %(username)s;
-    mkdir -p /home/%(username)s/.ssh;
-    """ % {'username': username}
-
-    run(cmd)
-    put(auth_file, "/home/%s/.ssh/authorized_keys2" % username)
-    run("chown -R %s:%s /home/%s" % (username, username, username))
 
 def easy_install():
     """
