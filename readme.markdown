@@ -1,20 +1,60 @@
-Introduction
-Start by installing Debian. If possible, use the USB boot method.
+Xenadu is a tool for remotely managing system configurations, making it possible to keep track of configurations using a version control tool like git.  Once your system configuration is managed by Xenadu, it is easy to crank out clone machines.
 
-Next, install sudo and openssh
+So let's say you want to use Xenadu to manage a machine on your network named "augusta".
 
-apt-get install sudo openssh-server rsync
+0. Install xenadu
 
-Then, get ssh public key login working.
+```
+wget github.com/iandennismiller/xenadu/blah.tgz
+tar xvfz xenadu*.tgz
+cd xenadu*
+python setup.py install
+```
 
-Resize the root partition
-Boot in rescue mode
+1. Make a directory to store your configuration
 
-Before mounting the root disk, switch to a different terminal and execute:
+`mkdir -p augusta/files`
 
-fsck.ext3 -f /dev/debian/root resize2fs -f /dev/debian/root 4G lvresize -L4G /dev/debian/root reboot
-Install the base Xenadu system
-export XENADU_PATH = ~/Code/saperea/domination xenadu --config $XENADU_PATH/xenadu/dom0_compaq/dom0.py --simulate xenadu --config $XENADU_PATH/xenadu/dom0_compaq/dom0.py --deploy
+2. Create a host definition file named augusta.py
 
-Install a guest
-xenadu --config $XENADU_PATH/xenadu/svn/svn.py --simulate
+`touch augusta/augusta.py`
+
+3. Edit augusta.py, and paste this skeletal host definition file:
+
+```
+#!/usr/bin/env python
+
+from Xenadu import XenaduConfig, Perm, f
+import Xenadu
+
+env = { 'ssh': { "user": "root", "address": "SKELETON" } }
+
+class xenadu_instance(XenaduConfig):
+    def file_list(self):
+        mapping = [
+            ['/etc/hosts', "hosts", Perm.root_644],
+            ]
+        return mapping
+
+xenadu_instance(env)
+```
+
+4. Set the ssh['address'] to point to your machine
+
+5. Edit mapping to list the files you want to track.  mapping is a python list, where each item in the list represents one file on the remote host.  An item like ['/etc/hosts', "hosts", Perm.root_644] consists of 3 values: 
+
+- the complete path of the file on the remote host (/etc/hosts)
+- the filename as it is locally stored (hosts)
+- the permissions that file should have on the remote host (here, owner is root and permission is 644).
+
+6. Make your xenadu definition executable, and grab all of those files from the remote host:
+
+```
+chmod 755 augusta.py
+./augusta.py --grab-all
+```
+
+7. The files are in ./files - that's it!  Save this configuration!
+
+`git init; git commit -m 'initial xenadu config'`
+
