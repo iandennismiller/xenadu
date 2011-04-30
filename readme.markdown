@@ -33,19 +33,13 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 
     ```python
     #!/usr/bin/env python
-
     from Xenadu import XenaduConfig, Perm
-
-    class xenadu_instance(XenaduConfig):
-        def file_list(self):
-            mapping = [
-                ['/etc/hosts', "hosts", Perm.root_644],
-                ['/etc/network/interfaces', "interfaces", Perm.root_644],
-                ]
-            return mapping
-
+    mapping = [
+        ['/etc/hosts', "hosts", Perm.root_644],
+        ['/etc/network/interfaces', "interfaces", Perm.root_644],
+        ]
     env = { 'ssh': { "user": "root", "address": "SKELETON" } }
-    xenadu_instance(env)
+    XenaduConfig(env, mapping)
     ```
 
 4. Set the `ssh['address']` to point to your machine.

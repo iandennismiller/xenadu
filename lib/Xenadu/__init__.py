@@ -38,8 +38,9 @@ class Core(object):
             function(self.command_chosen[option])
 
 class XenaduConfig(object):
-    def __init__(self, env):
+    def __init__(self, env, mapping):
         self.c = Core()
+        self.mapping = mapping
         Env['Config'].update(env)
         if 'guest_path' not in Env["Config"]:
             Env["Config"]['guest_path'] = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -60,7 +61,7 @@ class XenaduConfig(object):
             Env['Profile'] = None
 
         X = Language()
-        for i in self.file_list():
+        for i in self.mapping:
             X.add(i[0], i[1], i[2])
         Env['Config']['mapping'] = X.get_hash()
         #print Env['Config']
@@ -144,34 +145,3 @@ class Registry(object):
                 mod = sys.modules[mod_name]
                 logging.getLogger("Xenadu").debug("loading: %s" % mod_name)
                 mod.register()
-
-def f(filename):
-    src_file = os.path.join(Env["Config"]['guest_path'], 'files', filename)
-    #    src_file = "%(xenadu_path)s/files/" % Core.context.config  + filename
-    try:
-        file = open(src_file, 'r').read()
-        return file
-    except:
-        logging.getLogger("Xenadu").warn("problem opening file: %s" % src_file)
-        return ""
-
-def common(filename):
-    return "../../_common/%s" % filename
-
-"""
-def template(template_string):
-    template_hash = {}
-    
-    for item in Core.context.guest["config"]:
-        template_hash["xenadu_%s" % item] = Core.context.guest["config"][item]
-        
-    template = Template(template_string)
-
-    return template.safe_substitute(template_hash)
-"""
-    
-def file_common(filename):
-    return f(common(filename))
-
-def template_file(filename):
-    return template(f(filename))

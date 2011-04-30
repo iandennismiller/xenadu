@@ -1,15 +1,15 @@
 import os, shutil, subprocess, string
-from Xenadu import Language, f, common
+from Xenadu import Language
 import Xenadu
 
 def ssh_deploy_server_keys(dummy):
     Xenadu.Task.Build.clean(0)
 
     X = Language()
-    X.add("/etc/ssh/ssh_host_dsa_key", f("_ssh/ssh_host_dsa_key"), X.root_600)
-    X.add("/etc/ssh/ssh_host_dsa_key.pub", f("_ssh/ssh_host_dsa_key.pub"))
-    X.add("/etc/ssh/ssh_host_rsa_key", f("_ssh/ssh_host_rsa_key"), X.root_600)
-    X.add("/etc/ssh/ssh_host_rsa_key.pub", f("_ssh/ssh_host_rsa_key.pub"))
+    X.add("/etc/ssh/ssh_host_dsa_key", "_ssh/ssh_host_dsa_key", X.root_600)
+    X.add("/etc/ssh/ssh_host_dsa_key.pub", "_ssh/ssh_host_dsa_key.pub")
+    X.add("/etc/ssh/ssh_host_rsa_key", "_ssh/ssh_host_rsa_key", X.root_600)
+    X.add("/etc/ssh/ssh_host_rsa_key.pub", "_ssh/ssh_host_rsa_key.pub")
     mapping = X.get_hash()
 
     Xenadu.Task.Sync.do_build(mapping)
@@ -24,8 +24,8 @@ def ssh_bootstrap(dummy):
     Xenadu.Task.Build.clean(0)
 
     X = Language()
-    X.add("/root/.ssh/authorized_keys2", f("_ssh/authorized_keys2-root"))
-    X.add("/etc/ssh/sshd_config", f("_ssh/sshd_config"))
+    X.add("/root/.ssh/authorized_keys2", "_ssh/authorized_keys2-root")
+    X.add("/etc/ssh/sshd_config", "_ssh/sshd_config")
     mapping = X.get_hash()
 
     Xenadu.Task.Sync.do_build(mapping)
@@ -38,10 +38,10 @@ def ssh_bootstrap(dummy):
 
 def ssh_import_server_keys(dummy):
     X = Language()
-    X.add("/etc/ssh/ssh_host_dsa_key", f("_ssh/ssh_host_dsa_key"), X.root_600)
-    X.add("/etc/ssh/ssh_host_dsa_key.pub", f("_ssh/ssh_host_dsa_key.pub"))
-    X.add("/etc/ssh/ssh_host_rsa_key", f("_ssh/ssh_host_rsa_key"), X.root_600)
-    X.add("/etc/ssh/ssh_host_rsa_key.pub", f("_ssh/ssh_host_rsa_key.pub"))
+    X.add("/etc/ssh/ssh_host_dsa_key", "_ssh/ssh_host_dsa_key", X.root_600)
+    X.add("/etc/ssh/ssh_host_dsa_key.pub", "_ssh/ssh_host_dsa_key.pub")
+    X.add("/etc/ssh/ssh_host_rsa_key", "_ssh/ssh_host_rsa_key", X.root_600)
+    X.add("/etc/ssh/ssh_host_rsa_key.pub", "_ssh/ssh_host_rsa_key.pub")
     mapping = X.get_hash()
     
     Xenadu.Task.Slurp.slurp_from("/etc/ssh/ssh_host_dsa_key", file_mapping = mapping)
