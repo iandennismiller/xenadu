@@ -25,8 +25,8 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 
     ```
     cd augusta
-    touch augusta.py
-    chmod 755 augusta.py
+    touch ./augusta.py
+    chmod 755 ./augusta.py
     ```
 
 3. Edit augusta.py, and paste this skeletal host definition file:
@@ -64,7 +64,7 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 
     This will automatically go through every item in `mapping` and download it to the local `./files` directory.
 
-7. The files are in `augusta/files` - save this configuration!
+7. The files are in `./files` - save this configuration!
 
     ```
     git init; git commit -m 'initial xenadu config'
@@ -72,7 +72,7 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 
 ## Deploying changes
 
-So let's say you edit `augusta/files/hosts` and you want to push this to the remote machine.
+So let's say you edit `./files/hosts` and you want to push this to the remote machine.
 
 ```
 ./augusta.py --push hosts
