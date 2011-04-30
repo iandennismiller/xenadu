@@ -74,7 +74,7 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 6. Grab all of those files from the remote host:
 
     ```
-    ./augusta.py --grab-all
+    ./augusta.py --getall
     ```
 
     This will automatically go through every item in `mapping` and download it to the local `./files` directory.
@@ -97,7 +97,7 @@ So let's say you edit `augusta/files/hosts` and you want to push this to the rem
 
 In the "Getting started" example, /etc/hosts uses `Perm.root_644` to set its permissions to a fairly standard level.  What about a file like /etc/sudoers, which needs stricter permissions?  Luckily, it's pretty easy to create new permission schemes.  See the following example:
 
-```
+```python
 sudoers_perm = {"perm": "0440", "owner": "root", "group": "root"}
 mapping.append(['/etc/sudoers', 'sudoers', sudoers_perm])
 ```
