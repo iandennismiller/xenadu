@@ -13,11 +13,16 @@ python setup.py install
 
 1. Make a directory to store your configuration
 
-`mkdir -p augusta/files`
+```
+mkdir -p augusta/files
+```
 
 2. Create a host definition file named augusta.py
 
-`touch augusta/augusta.py`
+```
+touch augusta/augusta.py
+chmod 755 augusta/augusta.py
+```
 
 3. Edit augusta.py, and paste this skeletal host definition file:
 
@@ -39,18 +44,17 @@ class xenadu_instance(XenaduConfig):
 xenadu_instance(env)
 ```
 
-4. Set the ssh['address'] to point to your machine
+4. Set the `ssh['address']` to point to your machine
 
-5. Edit mapping to list the files you want to track.  mapping is a python list, where each item in the list represents one file on the remote host.  An item like ['/etc/hosts', "hosts", Perm.root_644] consists of 3 values: 
+5. Edit `mapping` to list the files you want to track.  `mapping` is a python list, where each item in the list represents one file on the remote host.  An item like `['/etc/hosts', "hosts", Perm.root_644]`consists of 3 values: 
 
-- the complete path of the file on the remote host (/etc/hosts)
-- the filename as it is locally stored (hosts)
-- the permissions that file should have on the remote host (here, owner is root and permission is 644).
+- the complete path of the file on the remote host (`/etc/hosts`)
+- the filename as it is locally stored (`hosts`)
+- the permissions that file should have on the remote host (here, owner is `root` and permission is `644`).
 
-6. Make your xenadu definition executable, and grab all of those files from the remote host:
+6. Grab all of those files from the remote host:
 
 ```
-chmod 755 augusta.py
 ./augusta.py --grab-all
 ```
 
