@@ -4,9 +4,9 @@ Xenadu is a tool for remotely managing system configurations, making it possible
 
 ## Getting started
 
-So let's say you want to use Xenadu to manage a machine on your network named "augusta".
+So let's say you want to use Xenadu to manage a machine on your network named "davidbowie".
 
-0. Install xenadu
+0. Install Xenadu on something other than your target machine (like your laptop):
 
     ```
     curl -L https://github.com/iandennismiller/xenadu/tarball/master -o xenadu.tgz
@@ -15,21 +15,22 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
     python setup.py install
     ```
 
-1. Make a directory to store your configuration (we'll call it augusta, since that's the name of the machine)
+1. Make a directory to store your configuration (we'll call it davidbowie, since that's the name of the machine).  The `files` subdirectory will contain a copy of all the remotely managed files.
 
     ```
-    mkdir -p augusta/files
+    mkdir davidbowie
+    cd davidbowie
+    mkdir files
     ```
 
-2. Create a host definition file named augusta.py
+2. Create a host definition file named `davidbowie.py` (or whatever you want, but again since this machine is named davidbowie, that's what I'm calling it)
 
     ```
-    cd augusta
-    touch ./augusta.py
-    chmod 755 ./augusta.py
+    touch ./davidbowie.py
+    chmod 755 ./davidbowie.py
     ```
 
-3. Edit augusta.py, and paste this skeletal host definition file:
+3. Edit davidbowie.py, and paste this skeletal host definition file:
 
     ```python
     #!/usr/bin/env python
@@ -59,7 +60,7 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 6. Grab all of those files from the remote host:
 
     ```
-    ./augusta.py --getall
+    ./davidbowie.py --getall
     ```
 
     This will automatically go through every item in `mapping` and download it to the local `./files` directory.
@@ -67,7 +68,7 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 7. The files are in `./files` - save this configuration!
 
     ```
-    git init; git commit -m 'initial xenadu config'
+    git init; git commit -m 'initial davidbowie config'
     ```
 
 ## Deploying changes
@@ -75,27 +76,36 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 So let's say you edit `./files/interfaces` and you want to push this to the remote machine.  This is way easier with Xenadu than manually copying the file with SSH, which requires you to type out the hostname and the paths for the local and remote files.  
 
 ```
-./augusta.py --push interfaces
+./davidbowie.py --push interfaces
 ```
 
 Or, if you forget what you call the file locally but remember the remote name, use that:
 
 ```
-./augusta.py --push /etc/network/interfaces
+./davidbowie.py --push /etc/network/interfaces
 ```
 
 You'll probably end up learning to use the shorter version for files you commonly deal with.  
 
 ## Permissions
 
-In the "Getting started" example, `/etc/network/interfaces` uses `Perm.root_644` to set its permissions to a fairly standard level.  What about a file like `/etc/sudoers`, which needs stricter permissions?  Luckily, it's pretty easy to create new permission schemes.  See the following example:
+In the "Getting started" example, `/etc/network/interfaces` uses `Perm.root_644` to set its permissions to a fairly standard level.  What about a file like `/etc/sudoers`, which needs stricter permissions?  It's pretty easy to create new permission schemes:
 
 ```python
+# make a new permission
 sudoers_perm = {"perm": "0440", "owner": "root", "group": "root"}
+
+# use it as you append the sudoers file to the mapping
 mapping.append(['/etc/sudoers', 'sudoers', sudoers_perm])
 ```
 
-In fact, `Perm.root_644` is equivalent to `{"perm": "0644", "owner": "root", "group": "root"}`, so really `Perm.root_644` is just for convenience.
+You could even go so far as to do something like:
+
+```python
+mapping.append(['/etc/sudoers', 'sudoers', {"perm": "0440", "owner": "root", "group": "root"}])
+```
+
+In fact, `Perm.root_644` is just a convenient equivalent to `{"perm": "0644", "owner": "root", "group": "root"}`, so that's what it actually means when you say something like `['/etc/hosts', "hosts", Perm.root_644]`.
 
 ## Multiple systems using a single definition file
 
@@ -114,7 +124,7 @@ XenaduConfig(env, mapping)
 Now putting `XENADU=dev` before your command will push the development version of `/etc/network/interfaces` to `dev.example.com`:
 
 ```
-XENADU=dev ./augusta.py --push /etc/network/interfaces
+XENADU=dev ./davidbowie.py --push /etc/network/interfaces
 ```
 
 This is useful because it lets you keep a single version control repository with all of the files for your stage and production server in one place.
