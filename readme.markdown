@@ -107,10 +107,9 @@ In fact, `Perm.root_644` is equivalent to `{"perm": "0644", "owner": "root", "gr
 
 ## Multiple systems using a single definition file
 
-In web app development, it's pretty common to have a staging server that is almost identical to the production server.  With Xenadu, it's pretty easy to use a single definition file to control both the staging and production servers.  Here is a quick example:
+In web app development, it's pretty common to have a staging server that is almost identical to the production server.  With Xenadu, it's pretty easy to use a single definition file to control both the staging and production servers.  Here is a quick example of what you can put at the end of your definition file, right before the `XenaduConfig(env, mapping)` directive:
 
 ```
-# If 'XENADU=dev' is specified on the command line, the following will override the defaults.
 if 'XENADU' in os.environ and os.environ['XENADU'] == 'dev':
     env['ssh']['address'] = "dev.example.com"
     custom_dev_files = [
@@ -120,7 +119,7 @@ if 'XENADU' in os.environ and os.environ['XENADU'] == 'dev':
     XenaduConfig(env, mapping)
 ```
 
-Now the following command will push the development version of `/etc/hosts` to `dev.example.com`:
+Now putting `XENADU=dev` before your command will push the development version of `/etc/hosts` to `dev.example.com`:
 
 ```
 XENADU=dev ./augusta.py --push /etc/hosts
