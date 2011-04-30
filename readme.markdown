@@ -109,7 +109,7 @@ In fact, `Perm.root_644` is equivalent to `{"perm": "0644", "owner": "root", "gr
 
 In web app development, it's pretty common to have a staging server that is almost identical to the production server.  With Xenadu, it's pretty easy to use a single definition file to control both the staging and production servers.  Here is a quick example of what you can put at the end of your definition file, right before the `XenaduConfig(env, mapping)` directive:
 
-```
+```python
 if 'XENADU' in os.environ and os.environ['XENADU'] == 'dev':
     env['ssh']['address'] = "dev.example.com"
     custom_dev_files = [
