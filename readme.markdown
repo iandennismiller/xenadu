@@ -24,8 +24,9 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 2. Create a host definition file named augusta.py
 
     ```
-    touch augusta/augusta.py
-    chmod 755 augusta/augusta.py
+    cd augusta
+    touch augusta.py
+    chmod 755 augusta.py
     ```
 
 3. Edit augusta.py, and paste this skeletal host definition file:
