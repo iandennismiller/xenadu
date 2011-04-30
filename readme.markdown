@@ -30,7 +30,7 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 
 3. Edit augusta.py, and paste this skeletal host definition file:
 
-    ```
+    ```python
     #!/usr/bin/env python
 
     from Xenadu import XenaduConfig, Perm
@@ -49,7 +49,7 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 
 4. Set the `ssh['address']` to point to your machine.
 
-    ```
+    ```python
     env = { 'ssh': { "user": "root", "address": "somewhere.example.com" } }
     ```
 
@@ -63,7 +63,7 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 
     After adding another file, `mapping` might look like this:
 
-    ```
+    ```python
     mapping = [
         ['/etc/hosts', "hosts", Perm.root_644],
         ['/etc/network/interfaces', "interfaces", Perm.root_644],
