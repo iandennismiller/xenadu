@@ -39,14 +39,14 @@ So let's say you want to use Xenadu to manage a machine on your network named "d
         ['/etc/hosts', "hosts", Perm.root_644],
         ['/etc/network/interfaces', "interfaces", Perm.root_644],
         ]
-    env = { 'ssh': { "user": "root", "address": "SKELETON" } }
+    env = { 'ssh': { "user": "root", "address": "somewhere.example.com" } }
     XenaduConfig(env, mapping)
     ```
 
 4. Set the `ssh['address']` to point to your machine.
 
     ```python
-    env = { 'ssh': { "user": "root", "address": "somewhere.example.com" } }
+    env = { 'ssh': { "user": "root", "address": "elsewhere.example.com" } }
     ```
 
     Also, make sure you are familiar with ssh public key authentication.  You need to log in as root in order for Xenadu to function correctly.  If you are uncomfortable with being able to log in as root, then make sure your private key is password-protected, and use a ssh keychain manager.
