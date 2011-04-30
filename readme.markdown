@@ -50,10 +50,10 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 
     Also, make sure you are familiar with ssh public key authentication.  You need to log in as root in order for Xenadu to function correctly.  If you are uncomfortable with being able to log in as root, then make sure your private key is password-protected, and use a ssh keychain manager.
 
-5. Edit `mapping` to list the files you want to track.  `mapping` is a python list, where each item in the list represents one file on the remote host.  An item like `['/etc/hosts', "hosts", Perm.root_644]` consists of 3 values: 
+5. Edit `mapping` to list the files you want to track.  `mapping` is a python list, where each item in the list represents one file on the remote host.  An item like `['/etc/network/interfaces', "interfaces", Perm.root_644]` consists of 3 values: 
 
-    - `/etc/hosts` is the complete path of the file on the remote host
-    - `hosts` is the local name of the file, which is in the `./files` directory
+    - `/etc/network/interfaces` is the complete path of the file on the remote host
+    - `interfaces` is the local name of the file, which is in the `./files` directory.
     - `Perm.root_644` is the permissions that file should have on the remote host (here, owner is `root` and permission is `644`).
 
 6. Grab all of those files from the remote host:
@@ -72,28 +72,30 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 
 ## Deploying changes
 
-So let's say you edit `./files/hosts` and you want to push this to the remote machine.
+So let's say you edit `./files/interfaces` and you want to push this to the remote machine.  This is way easier with Xenadu than manually copying the file with SSH, which requires you to type out the hostname and the paths for the local and remote files.  
 
 ```
-./augusta.py --push hosts
+./augusta.py --push interfaces
 ```
 
 Or, if you forget what you call the file locally but remember the remote name, use that:
 
 ```
-./augusta.py --push /etc/hosts
+./augusta.py --push /etc/network/interfaces
 ```
+
+You'll probably end up learning to use the shorter version for files you commonly deal with.  
 
 ## Permissions
 
-In the "Getting started" example, `/etc/hosts` uses `Perm.root_644` to set its permissions to a fairly standard level.  What about a file like `/etc/sudoers`, which needs stricter permissions?  Luckily, it's pretty easy to create new permission schemes.  See the following example:
+In the "Getting started" example, `/etc/network/interfaces` uses `Perm.root_644` to set its permissions to a fairly standard level.  What about a file like `/etc/sudoers`, which needs stricter permissions?  Luckily, it's pretty easy to create new permission schemes.  See the following example:
 
 ```python
 sudoers_perm = {"perm": "0440", "owner": "root", "group": "root"}
 mapping.append(['/etc/sudoers', 'sudoers', sudoers_perm])
 ```
 
-In fact, `Perm.root_644` is equivalent to `{"perm": "0644", "owner": "root", "group": "root"}`, so really it's just there for convenience.
+In fact, `Perm.root_644` is equivalent to `{"perm": "0644", "owner": "root", "group": "root"}`, so really `Perm.root_644` is just for convenience.
 
 ## Multiple systems using a single definition file
 
@@ -103,14 +105,16 @@ In web app development, it's pretty common to have a staging server that is almo
 if 'XENADU' in os.environ and os.environ['XENADU'] == 'dev':
     env['ssh']['address'] = "dev.example.com"
     custom_dev_files = [
-        ['/etc/hosts', "hosts-dev", Perm.root_644],
+        ['/etc/network/interfaces', "interfaces-dev", Perm.root_644],
     ]
     mapping.extend(custom_dev_files)
 XenaduConfig(env, mapping)
 ```
 
-Now putting `XENADU=dev` before your command will push the development version of `/etc/hosts` to `dev.example.com`:
+Now putting `XENADU=dev` before your command will push the development version of `/etc/network/interfaces` to `dev.example.com`:
 
 ```
-XENADU=dev ./augusta.py --push /etc/hosts
+XENADU=dev ./augusta.py --push /etc/network/interfaces
 ```
+
+This is useful because it lets you keep a single version control repository with all of the files for your stage and production server in one place.
