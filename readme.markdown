@@ -33,18 +33,17 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
     ```
     #!/usr/bin/env python
 
-    from Xenadu import XenaduConfig, Perm, f
-    import Xenadu
-
-    env = { 'ssh': { "user": "root", "address": "SKELETON" } }
+    from Xenadu import XenaduConfig, Perm
 
     class xenadu_instance(XenaduConfig):
         def file_list(self):
             mapping = [
                 ['/etc/hosts', "hosts", Perm.root_644],
+                ['/etc/network/interfaces', "interfaces", Perm.root_644],
                 ]
             return mapping
 
+    env = { 'ssh': { "user": "root", "address": "SKELETON" } }
     xenadu_instance(env)
     ```
 
@@ -62,7 +61,7 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
     - the filename as it is locally stored (`hosts`)
     - the permissions that file should have on the remote host (here, owner is `root` and permission is `644`).
 
-    After adding a few more files, `mapping` might look like this:
+    After adding another file, `mapping` might look like this:
 
     ```
     mapping = [
