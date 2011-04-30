@@ -116,7 +116,7 @@ if 'XENADU' in os.environ and os.environ['XENADU'] == 'dev':
         ['/etc/hosts', "hosts-dev", Perm.root_644],
     ]
     mapping.extend(custom_dev_files)
-    XenaduConfig(env, mapping)
+XenaduConfig(env, mapping)
 ```
 
 Now putting `XENADU=dev` before your command will push the development version of `/etc/hosts` to `dev.example.com`:
