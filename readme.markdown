@@ -105,3 +105,23 @@ mapping.append(['/etc/sudoers', 'sudoers', sudoers_perm])
 
 In fact, `Perm.root_644` is equivalent to `{"perm": "0644", "owner": "root", "group": "root"}`, so really it's just there for convenience.
 
+## Multiple systems using a single definition file
+
+In web app development, it's pretty common to have a staging server that is almost identical to the production server.  With Xenadu, it's pretty easy to use a single definition file to control both the staging and production servers.  Here is a quick example:
+
+```
+# If 'XENADU=dev' is specified on the command line, the following will override the defaults.
+if 'XENADU' in os.environ and os.environ['XENADU'] == 'dev':
+    env['ssh']['address'] = "dev.example.com"
+    custom_dev_files = [
+        ['/etc/hosts', "hosts-dev", Perm.root_644],
+    ]
+    mapping.extend(custom_dev_files)
+    XenaduConfig(env, mapping)
+```
+
+Now the following command will push the development version of `/etc/hosts` to `dev.example.com`:
+
+```
+XENADU=dev ./augusta.py --push /etc/hosts
+```
