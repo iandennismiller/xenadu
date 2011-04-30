@@ -17,13 +17,21 @@ def slurp_remote(remote_file, file_mapping=None):
     #subprocess.Popen(["/usr/bin/scp", "%s@%s:%s" % (ssh["user"], ssh["address"], remote_file), local_file])
 
 def push_remote(remote_file, file_mapping=None):
+    entry = None
     try:
         entry = Xenadu.Env["Config"]["mapping"][remote_file]
     except:
+        for filename in Xenadu.Env["Config"]["mapping"]:
+            if Xenadu.Env["Config"]["mapping"][filename]['local_file'] == remote_file:
+                entry = Xenadu.Env["Config"]["mapping"][filename]
+    
+    if not entry:
         logging.getLogger("Xenadu").error("can't find: %s" % remote_file)
         return
 
     local_file = os.path.join(Xenadu.Env["Config"]["guest_path"], "files", entry['local_file'])
+    remote_file = os.path.join(Xenadu.Env["Config"]["guest_path"], "files", entry['remote_file'])
+
     logging.getLogger("Xenadu").info("push local file: %s" % local_file)
     logging.getLogger("Xenadu").info("to remote file: %s" % remote_file)
     ssh = Xenadu.Env["Config"]["ssh"]

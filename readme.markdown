@@ -56,7 +56,7 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 
     Also, make sure you are familiar with ssh public key authentication.  You need to log in as root in order for Xenadu to function correctly.  If you are uncomfortable with being able to log in as root, then make sure your private key is password-protected, and use a ssh keychain manager.
 
-5. Edit `mapping` to list the files you want to track.  `mapping` is a python list, where each item in the list represents one file on the remote host.  An item like `['/etc/hosts', "hosts", Perm.root_644]`consists of 3 values: 
+5. Edit `mapping` to list the files you want to track.  `mapping` is a python list, where each item in the list represents one file on the remote host.  An item like `['/etc/hosts', "hosts", Perm.root_644]` consists of 3 values: 
 
     - the complete path of the file on the remote host (`/etc/hosts`)
     - the filename as it is locally stored (`hosts`)
@@ -91,12 +91,18 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 So let's say you edit `augusta/files/hosts` and you want to push this to the remote machine.
 
 ```
+./augusta.py --push hosts
+```
+
+Or, if you forget what you call the file locally but remember the remote name, use that:
+
+```
 ./augusta.py --push /etc/hosts
 ```
 
 ## Permissions
 
-In the "Getting started" example, /etc/hosts uses `Perm.root_644` to set its permissions to a fairly standard level.  What about a file like /etc/sudoers, which needs stricter permissions?  Luckily, it's pretty easy to create new permission schemes.  See the following example:
+In the "Getting started" example, `/etc/hosts` uses `Perm.root_644` to set its permissions to a fairly standard level.  What about a file like `/etc/sudoers`, which needs stricter permissions?  Luckily, it's pretty easy to create new permission schemes.  See the following example:
 
 ```python
 sudoers_perm = {"perm": "0440", "owner": "root", "group": "root"}
