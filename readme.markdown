@@ -52,19 +52,9 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 
 5. Edit `mapping` to list the files you want to track.  `mapping` is a python list, where each item in the list represents one file on the remote host.  An item like `['/etc/hosts', "hosts", Perm.root_644]` consists of 3 values: 
 
-    - the complete path of the file on the remote host (`/etc/hosts`)
-    - the filename as it is locally stored (`hosts`)
-    - the permissions that file should have on the remote host (here, owner is `root` and permission is `644`).
-
-    After adding another file, `mapping` might look like this:
-
-    ```python
-    mapping = [
-        ['/etc/hosts', "hosts", Perm.root_644],
-        ['/etc/network/interfaces', "interfaces", Perm.root_644],
-        ['/etc/resolv.conf', "resolv.conf", Perm.root_644],
-        ]
-    ```
+    - `/etc/hosts` is the complete path of the file on the remote host
+    - `hosts` is the local name of the file, which is in the `./files` directory
+    - `Perm.root_644` is the permissions that file should have on the remote host (here, owner is `root` and permission is `644`).
 
 6. Grab all of those files from the remote host:
 
