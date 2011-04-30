@@ -43,7 +43,7 @@ So let's say you want to use Xenadu to manage a machine on your network named "d
     XenaduConfig(env, mapping)
     ```
 
-4. Set the `ssh['address']` to point to your machine.
+4. Set the ssh `address` to point to your machine.
 
     ```python
     env = { 'ssh': { "user": "root", "address": "elsewhere.example.com" } }
