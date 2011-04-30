@@ -41,6 +41,9 @@ class XenaduConfig(object):
     def __init__(self, env):
         self.c = Core()
         Env['Config'].update(env)
+        if 'guest_path' not in Env["Config"]:
+            Env["Config"]['guest_path'] = os.path.dirname(os.path.abspath(sys.argv[0]))
+        logging.getLogger("Xenadu").info("path is: %s " % Env["Config"]['guest_path'])
 
         # process command line
         Env['Core'].command_line.add_option("-p", help="profile to use")
