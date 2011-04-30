@@ -1,3 +1,5 @@
+# Xenadu
+
 Xenadu is a tool for remotely managing system configurations, making it possible to keep track of configurations using a version control tool like git.  Once your system configuration is managed by Xenadu, it is easy to crank out clone machines.
 
 So let's say you want to use Xenadu to manage a machine on your network named "augusta".
@@ -5,9 +7,9 @@ So let's say you want to use Xenadu to manage a machine on your network named "a
 0. Install xenadu
 
     ```
-    wget github.com/iandennismiller/xenadu/blah.tgz
-    tar xvfz xenadu*.tgz
-    cd xenadu*
+    curl -L https://github.com/iandennismiller/xenadu/tarball/master -o xenadu.tgz
+    tar xvfz xenadu.tgz
+    cd iandennismiller-xenadu*
     python setup.py install
     ```
 
