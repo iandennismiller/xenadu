@@ -40,7 +40,7 @@ So let's say you want to use Xenadu to manage a machine on your network named "d
         ['/etc/network/interfaces', "interfaces", Perm.root_644],
         ]
     env = { 'ssh': { "user": "root", "address": "somewhere.example.com" } }
-    XenaduConfig(env, mapping)
+    XenaduConfig(globals())
     ```
 
 4. Set the ssh `address` to point to your machine.
