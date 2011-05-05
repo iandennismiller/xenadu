@@ -1,11 +1,14 @@
-import Xenadu
+import Xenadu, logging
 from Xenadu.Task.Ssh import ssh
 
 def aptitude(dummy):
+    if "apt" not in Xenadu.Env:
+        logging.getLogger("Xenadu").error("host definition has no apt=blah?")
+        return
+
     apt_cmd = "aptitude -y install "
-    for pkg in Xenadu.Env['Config']["apt"]:
-        apt_cmd += "%s " % pkg
-    
+    for pkg in Xenadu.Env["apt"]:
+        apt_cmd += "%s " % pkg    
     ssh(apt_cmd)
 
 def register():

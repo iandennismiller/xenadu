@@ -27,7 +27,7 @@ class Core(object):
         logger.setLevel(logging.INFO)
         formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         ch = logging.StreamHandler()
-        ch.setLevel(logging.INFO)
+        #ch.setLevel(logging.INFO)
         ch.setFormatter(formatter)
         logger.addHandler(ch)
 
@@ -36,23 +36,32 @@ class Core(object):
             logging.getLogger("Xenadu").debug("calling " + option)
             function = Env['Registry'].tasks[option]
             function(self.command_chosen[option])
+        logging.getLogger("Xenadu").info("done")
 
 class XenaduConfig(object):
-    def __init__(self, env, mapping):
+    def __init__(self, everything):
+        #def __init__(self, env, mapping):
         self.c = Core()
-        self.mapping = mapping
-        Env['Config'].update(env)
+        self.mapping = everything["mapping"]
+        Env['Config'].update(everything["env"])
+        if "apt" in everything:
+            Env['apt'] = everything["apt"]
+
         if 'guest_path' not in Env["Config"]:
             Env["Config"]['guest_path'] = os.path.dirname(os.path.abspath(sys.argv[0]))
         logging.getLogger("Xenadu").info("path is: %s " % Env["Config"]['guest_path'])
 
         # process command line
         Env['Core'].command_line.add_option("-p", help="profile to use")
+        Env['Core'].command_line.add_option("-v", action="store_true", help="verbose logging")
         (options, args) = Env['Core'].command_line.parse_args()
         for option in Env["Registry"].options.keys():
             if getattr(options, option):
                 Env['Core'].command_chosen[option] = getattr(options, option)
         
+        if getattr(options, "v"):
+            logging.getLogger("Xenadu").setLevel(logging.DEBUG)
+
         profile = getattr(options, "p")
         if profile:
             Env['Profile'] = profile
@@ -97,17 +106,10 @@ class Language(object):
         self.mapping = {}
 
     def add(self, dest, src, perm_hash=Perm.root_644):        
-        #try:
-        #with open(src) as f:
-        #    content = f.read()
-
         self.mapping[dest] = {
-            #"content": content,
             "local_file": src,
             "remote_file": dest,
-            #"generator": generator,
         }
-
         self.mapping[dest].update(perm_hash)
 
     def get_hash(self):
