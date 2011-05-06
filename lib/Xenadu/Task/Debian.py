@@ -6,7 +6,7 @@ def aptitude(dummy):
         logging.getLogger("Xenadu").error("host definition has no apt=blah?")
         return
 
-    apt_cmd = "aptitude -y install "
+    apt_cmd = "export DEBIAN_FRONTEND=noninteractive; aptitude -y install "
     for pkg in Xenadu.Env["apt"]:
         apt_cmd += "%s " % pkg    
     ssh(apt_cmd)
