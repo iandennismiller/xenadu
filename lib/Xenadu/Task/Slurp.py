@@ -49,9 +49,15 @@ def slurp_all(dummy, file_mapping = None):
         slurp_remote(filename)
 
 def diff(remote_file, file_mapping=None):
+    entry = None
     try:
         entry = Xenadu.Env["Config"]["mapping"][remote_file]
     except:
+        for filename in Xenadu.Env["Config"]["mapping"]:
+            if Xenadu.Env["Config"]["mapping"][filename]['local_file'] == remote_file:
+                entry = Xenadu.Env["Config"]["mapping"][filename]
+
+    if not entry:
         logging.getLogger("Xenadu").error("can't find: %s" % remote_file)
         return
 
