@@ -56,6 +56,7 @@ def diff(remote_file, file_mapping=None):
         for filename in Xenadu.Env["Config"]["mapping"]:
             if Xenadu.Env["Config"]["mapping"][filename]['local_file'] == remote_file:
                 entry = Xenadu.Env["Config"]["mapping"][filename]
+                remote_file = entry['remote_file']
 
     if not entry:
         logging.getLogger("Xenadu").error("can't find: %s" % remote_file)
