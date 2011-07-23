@@ -46,6 +46,8 @@ class XenaduConfig(object):
         Env['Config'].update(everything["env"])
         if "apt" in everything:
             Env['apt'] = everything["apt"]
+        if "search_paths" in everything:
+            Env['search_paths'] = everything["search_paths"]
 
         if 'guest_path' not in Env["Config"]:
             Env["Config"]['guest_path'] = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -54,11 +56,14 @@ class XenaduConfig(object):
         # process command line
         Env['Core'].command_line.add_option("-p", help="profile to use")
         Env['Core'].command_line.add_option("-v", action="store_true", help="verbose logging")
+        Env['Core'].command_line.add_option("-F", action="store_true", help="force ./files")
         (options, args) = Env['Core'].command_line.parse_args()
         for option in Env["Registry"].options.keys():
             if getattr(options, option):
                 Env['Core'].command_chosen[option] = getattr(options, option)
         
+        if getattr(options, "F"):
+            Env['force_files'] = True
         if getattr(options, "v"):
             logging.getLogger("Xenadu").setLevel(logging.DEBUG)
 
@@ -69,10 +74,11 @@ class XenaduConfig(object):
         else:
             Env['Profile'] = None
 
-        X = Language()
+        X = Mapping()
         for i in self.mapping:
             X.add(i[0], i[1], i[2])
         Env['Config']['mapping'] = X.get_hash()
+        Env['Mapping'] = X
         #print Env['Config']
         self.c.start()
 
@@ -101,7 +107,7 @@ class Perm(object):
         "group": "root" 
     }
 
-class Language(object):
+class Mapping(object):
     def __init__(self):
         self.mapping = {}
 
@@ -114,6 +120,28 @@ class Language(object):
 
     def get_hash(self):
         return self.mapping
+
+    def resolve_name(self, name):
+        h = None
+        if name in self.mapping:
+            h = self.mapping[name]
+        else:
+            for i in self.mapping:
+                if self.mapping[i]['local_file'] == name:
+                    h = self.mapping[i]
+        if h:
+            # now, find full path of file
+            if 'force_files' in Env:
+                f = os.path.join(Env["Config"]["guest_path"], 'files', h['local_file'])
+                h['local_file'] = f
+                return h
+            paths = ["files"] + Env['search_paths']
+            for p in paths:
+                f = os.path.join(Env["Config"]["guest_path"], p, h['local_file'])
+                if os.path.exists(f):
+                    h['local_file'] = f
+                    return h
+        raise Exception('cannot find file "%s"' % name)
 
 class Registry(object):
     def __init__(self, Core):

@@ -1,11 +1,11 @@
 import os, shutil, subprocess, string, logging
-from Xenadu import Language
+from Xenadu import Mapping
 import Xenadu
 
 def ssh_bootstrap(dummy):
     Xenadu.Task.Build.clean(0)
 
-    X = Language()
+    X = Mapping()
     X.add("/root/.ssh/authorized_keys2", "_ssh/authorized_keys2-root")
     X.add("/etc/ssh/sshd_config", "_ssh/sshd_config")
     mapping = X.get_hash()
