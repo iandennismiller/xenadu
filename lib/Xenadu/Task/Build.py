@@ -10,12 +10,7 @@ def clean(dummy):
 
 def do_build(file_mapping):
     for dest_filename in file_mapping:
-        try:
-            entry = Xenadu.Env["Config"]["mapping"][dest_filename]
-        except:
-            logging.getLogger("Xenadu").error("can't find: %s" % dest_filename)
-            return
-
+        entry = Xenadu.Env['Mapping'].resolve_name(dest_filename)
         dst_file = "%s/build/.%s" % (Xenadu.Env["Config"]["tmp_path"], dest_filename)
         
         try:
@@ -23,7 +18,8 @@ def do_build(file_mapping):
         except:
             pass
         
-        local_file = os.path.join(Xenadu.Env["Config"]["guest_path"], "files", entry['local_file'])
+        #local_file = os.path.join(Xenadu.Env["Config"]["guest_path"], "files", entry['local_file'])
+        local_file = entry['local_file']
         shutil.copyfile(local_file, dst_file)
 
         os.chmod(dst_file, string.atoi(file_mapping[dest_filename]["perm"], 8))
