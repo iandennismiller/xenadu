@@ -13,7 +13,6 @@ setup(name='xenadu',
       package_dir = {'': 'lib'},
       long_description="Xenadu manages system configurations, making them easy to track with version control software",
       license="GPL v2",
-      scripts=['bin/xenadu'],
       platforms=["any"],
      )
 
