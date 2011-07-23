@@ -46,8 +46,9 @@ class XenaduConfig(object):
         Env['Config'].update(everything["env"])
         if "apt" in everything:
             Env['apt'] = everything["apt"]
+        Env['search_paths'] = ['files']
         if "search_paths" in everything:
-            Env['search_paths'] = everything["search_paths"]
+            Env['search_paths'] += everything["search_paths"]
 
         if 'guest_path' not in Env["Config"]:
             Env["Config"]['guest_path'] = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -135,8 +136,7 @@ class Mapping(object):
                 f = os.path.join(Env["Config"]["guest_path"], 'files', h['local_file'])
                 h['local_file'] = f
                 return h
-            paths = ["files"] + Env['search_paths']
-            for p in paths:
+            for p in Env['search_paths']:
                 f = os.path.join(Env["Config"]["guest_path"], p, h['local_file'])
                 if os.path.exists(f):
                     h['local_file'] = f
