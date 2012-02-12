@@ -132,7 +132,7 @@ class Mapping(object):
                     h = self.mapping[i]
         if h:
             # now, find full path of file
-            if 'force_files' in Env:
+            if 'force_files' in Env and Env['force_files'] == True:
                 f = os.path.join(Env["Config"]["guest_path"], 'files', h['local_file'])
                 h['local_file'] = f
                 return h
